@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { AppstoreAddOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { createTutorial } from "../../../store/actions";
@@ -19,7 +19,6 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import MovieIcon from "@mui/icons-material/Movie";
 import Select from "react-select";
 import { common } from "@mui/material/colors";
-
 const useStyles = makeStyles(theme => ({
   root: {
     display: "flex",
@@ -34,7 +33,6 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: deepPurple[500]
   }
 }));
-
 const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
   const firebase = useFirebase();
   const firestore = useFirestore();
@@ -43,11 +41,13 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [imageIconClicked,setImageIconClicked]=useState(false)
   const [formValue, setformValue] = useState({
     title: "",
     summary: "",
     owner: ""
   });
+  const [tutorialImage, setTutorialImage] = useState(null);
 
   const loadingProp = useSelector(
     ({
@@ -63,15 +63,12 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
       }
     }) => error
   );
-
   useEffect(() => {
     setLoading(loadingProp);
   }, [loadingProp]);
-
   useEffect(() => {
     setError(errorProp);
   }, [errorProp]);
-
   const organizations = useSelector(
     ({
       profile: {
@@ -79,7 +76,6 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
       }
     }) => organizations
   );
-
   const userHandle = useSelector(
     ({
       firebase: {
@@ -87,7 +83,6 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
       }
     }) => handle
   );
-
   const displayName = useSelector(
     ({
       firebase: {
@@ -95,11 +90,9 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
       }
     }) => displayName
   );
-
   //This name should be replaced by displayName when implementing backend
   const sampleName = "User Name Here";
   const allowOrgs = organizations && organizations.length > 0;
-
   const orgList =
     allowOrgs > 0
       ? organizations
@@ -115,12 +108,14 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
 
   useEffect(() => {
     setVisible(viewModal);
+    setImageIconClicked(false)
   }, [viewModal]);
 
   const onSubmit = formData => {
     formData.preventDefault();
     const tutorialData = {
       ...formValue,
+      tutorialImage: tutorialImage,
       created_by: userHandle,
       is_org: userHandle !== formValue.owner,
       completed: false
@@ -128,7 +123,6 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
     console.log(tutorialData);
     createTutorial(tutorialData)(firebase, firestore, dispatch, history);
   };
-
   const onOwnerChange = value => {
     setformValue(prev => ({
       ...prev,
@@ -138,11 +132,31 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
 
   const handleChange = e => {
     const { name, value } = e.target;
-
     setformValue(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+  const fileInputRef = useRef(null);
+
+  const handleIconClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = event => {
+    setImageIconClicked(true)
+    const selectedFile = event.target.files[0];
+
+    if (selectedFile) {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        const base64Result = reader.result;
+        setTutorialImage(base64Result);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
   };
 
   const classes = useStyles();
@@ -194,7 +208,6 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
             />
           </Typography>
         </Box>
-
         <form id="tutorialNewForm">
           <TextField
             prefix={
@@ -210,7 +223,6 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
             style={{ marginBottom: "2rem" }}
             onChange={e => handleChange(e)}
           />
-
           <TextField
             prefix={
               <AppstoreAddOutlined style={{ color: "rgba(0,0,0,.25)" }} />
@@ -227,7 +239,14 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
           />
 
           <IconButton>
-            <ImageIcon />
+            <ImageIcon onClick={handleIconClick} sx={{color : imageIconClicked ? '#1876d3' : ''}} />
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
           </IconButton>
           <IconButton>
             <MovieIcon />
@@ -235,7 +254,6 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
           <IconButton>
             <DescriptionIcon />
           </IconButton>
-
           <div className="mb-0">
             <div style={{ float: "right" }}>
               <Button
@@ -277,5 +295,4 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
     </Modal>
   );
 };
-
 export default NewTutorial;
