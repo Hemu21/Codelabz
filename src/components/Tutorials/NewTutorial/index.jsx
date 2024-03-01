@@ -47,7 +47,7 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
     summary: "",
     owner: ""
   });
-  const [tutorialBanner, setTutorialBanner] = useState(null);
+  const [tutorialImage, setTutorialImage] = useState(null);
 
   const loadingProp = useSelector(
     ({
@@ -115,7 +115,7 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
     formData.preventDefault();
     const tutorialData = {
       ...formValue,
-      tutorialBanner: tutorialBanner,
+      tutorialImage: tutorialImage,
       created_by: userHandle,
       is_org: userHandle !== formValue.owner,
       completed: false
@@ -153,7 +153,7 @@ const NewTutorial = ({ viewModal, onSidebarClick, viewCallback, active }) => {
 
       reader.onloadend = () => {
         const base64Result = reader.result;
-        setTutorialBanner(base64Result);
+        setTutorialImage(base64Result);
       };
       reader.readAsDataURL(selectedFile);
     }
