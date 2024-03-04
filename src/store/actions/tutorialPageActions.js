@@ -192,7 +192,7 @@ export const getCommentReply =
     }
   };
 
-export const addComment = comment => async (firebase, firestore, dispatch) => {
+export const addComment = (comment,id) => async (firebase, firestore, dispatch) => {
   try {
     dispatch({ type: actions.ADD_COMMENT_START });
     await firestore
@@ -213,6 +213,7 @@ export const addComment = comment => async (firebase, firestore, dispatch) => {
       })
       .then(() => {
         dispatch({ type: actions.ADD_COMMENT_SUCCESS });
+        getTutorialData(id)(firebase,firestore,dispatch);
       });
   } catch (e) {
     dispatch({ type: actions.ADD_COMMENT_FAILED, payload: e.message });
