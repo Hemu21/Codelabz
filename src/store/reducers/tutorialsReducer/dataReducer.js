@@ -27,7 +27,21 @@ const TutorialsDataReducer = (state = initialState, { type, payload }) => {
         loading: false,
         error: false
       };
-
+      case actions.GET_TUTORIAL_LIKES_START:
+        return {
+          ...state,
+          loading: true,
+          error: null
+        };
+  
+      case actions.GET_TUTORIAL_LIKES_SUCCESS:
+        return {
+          ...state,
+          user: [payload],
+          loading: false,
+          error: false
+        };
+  
     case actions.GET_ORG_TUTORIALS_BASIC_SUCCESS:
       return {
         ...state,
@@ -43,7 +57,13 @@ const TutorialsDataReducer = (state = initialState, { type, payload }) => {
         loading: false,
         error: payload
       };
-
+      case actions.GET_TUTORIAL_LIKES_FAILED:
+        return {
+          ...state,
+          loading: false,
+          error: payload
+        };
+  
     default:
       return state;
   }

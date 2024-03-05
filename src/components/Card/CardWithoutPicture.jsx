@@ -21,6 +21,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useDispatch, useSelector } from "react-redux";
 import { useFirebase, useFirestore } from "react-redux-firebase";
 import { getUserProfileData } from "../../store/actions";
+import { addLikeTutorial, getTutorialLikesData } from "../../store/actions/tutorialsActions";
 const useStyles = makeStyles(theme => ({
   root: {
     margin: "0.5rem",
@@ -68,16 +69,19 @@ const useStyles = makeStyles(theme => ({
 export default function CardWithoutPicture({ tutorial }) {
   const classes = useStyles();
   const [alignment, setAlignment] = React.useState("left");
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
   const dispatch = useDispatch();
   const firebase = useFirebase();
   const firestore = useFirestore();
+  const uid = firebase.auth().currentUser.uid;
   const handleIncrement = () => {
     setCount(count + 1);
+    addLikeTutorial({uid:uid,tut_id:tutorial.tutorial_id,value:count+1})(firebase,firestore,dispatch);
   };
 
   const handleDecrement = () => {
     setCount(count - 1);
+    addLikeTutorial({uid:uid,tut_id:tutorial.tutorial_id,value:count-1})(firebase,firestore,dispatch);
   };
 
   const handleAlignment = (event, newAlignment) => {
@@ -86,6 +90,7 @@ export default function CardWithoutPicture({ tutorial }) {
 
   useEffect(() => {
     getUserProfileData(tutorial?.created_by)(firebase, firestore, dispatch);
+    getTutorialLikesData()(firebase,firestore,dispatch).then((e)=>{e.map((ele)=>{if(ele.uid==uid && ele.tut_id==id){setCount(ele.value)}})})
   }, [tutorial]);
 
   const user = useSelector(

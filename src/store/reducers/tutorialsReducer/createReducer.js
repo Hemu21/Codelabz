@@ -25,7 +25,20 @@ const TutorialsCreateReducer = (state = initialState, { type, payload }) => {
         loading: false,
         error: false
       };
+      case actions.ADD_TUTORIAL_LIKES_START:
+        return {
+          ...state,
+          loading: true,
+          error: null
+        };
 
+      case actions.ADD_TUTORIAL_LIKES_SUCCESS:
+        return {
+          ...state,
+          loading: false,
+          error: false
+        };
+  
     case actions.CREATE_TUTORIAL_FAIL:
     case actions.CREATE_TUTORIAL_STEP_FAIL:
       return {
@@ -33,7 +46,12 @@ const TutorialsCreateReducer = (state = initialState, { type, payload }) => {
         loading: false,
         error: payload
       };
-
+      case actions.ADD_TUTORIAL_LIKES_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: payload
+      };
     default:
       return state;
   }

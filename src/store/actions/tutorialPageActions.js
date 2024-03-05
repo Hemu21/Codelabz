@@ -194,6 +194,7 @@ export const getCommentReply =
 
 export const addComment = (comment,id) => async (firebase, firestore, dispatch) => {
   try {
+    const userID = firebase.auth().currentUser.uid;
     dispatch({ type: actions.ADD_COMMENT_START });
     await firestore
       .collection("cl_comments")
@@ -210,6 +211,20 @@ export const addComment = (comment,id) => async (firebase, firestore, dispatch) 
               comments: firebase.firestore.FieldValue.arrayUnion(docref.id)
             });
         }
+        try {
+          dispatch({ type: actions.ADD_COMMENT_LIKES_START });
+          firestore
+            .collection("comment_likes")
+            .add({ uid: userID, comment_id: docref.id, value: 0 })
+            .then(() => {
+              dispatch({ type: actions.ADD_COMMENT_LIKES_SUCCESS });
+            });
+        } catch (e) {
+          dispatch({
+            type: actions.ADD_COMMENT_LIKES_FAILED,
+            payload: e.message
+          });
+        }
       })
       .then(() => {
         dispatch({ type: actions.ADD_COMMENT_SUCCESS });
@@ -217,5 +232,62 @@ export const addComment = (comment,id) => async (firebase, firestore, dispatch) 
       });
   } catch (e) {
     dispatch({ type: actions.ADD_COMMENT_FAILED, payload: e.message });
+    getCommentLikesData()(firebase, firestore, dispatch);
   }
 };
+
+export const addLikeComment = data => async (firebase, firestore, dispatch) => {
+  try {
+    dispatch({ type: actions.ADD_COMMENT_LIKES_START });
+    const doc_id = await firestore
+      .collection("comment_likes")
+      .get()
+      .then(querySnapshot => {
+        let _data = "";
+        querySnapshot.docs.map(ele => {
+          if (
+            ele.data().uid == data.uid &&
+            ele.data().comment_id == data.comment_id
+          ) {
+            _data = ele.id;
+          }
+        });
+        return _data;
+      });
+
+    await firestore
+      .collection("comment_likes")
+      .doc(doc_id)
+      .update({
+        value: data.value
+      })
+      .then(() => {
+        dispatch({ type: actions.ADD_COMMENT_LIKES_SUCCESS });
+      });
+  } catch (error) {
+    dispatch({ type: actions.ADD_COMMENT_FAILED, payload: error.message });
+  }
+};
+
+export const getCommentLikesData =
+  () => async (firebase, firestore, dispatch) => {
+    try {
+      dispatch({ type: actions.GET_COMMENT_DATA_START });
+      const data = await firestore
+        .collection("comment_likes")
+        .get()
+        .then(querySnapshot => {
+          let _data = [];
+          querySnapshot.docs.map(ele => _data.push(ele.data()));
+          return _data;
+        });
+      const tutorialLike = data;
+      dispatch({
+        type: actions.GET_COMMENT_DATA_SUCCESS,
+        payload: tutorialLike
+      });
+      return data;
+    } catch (e) {
+      dispatch({ type: actions.GET_COMMENT_DATA_FAIL });
+    }
+  };
