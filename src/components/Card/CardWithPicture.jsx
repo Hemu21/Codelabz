@@ -74,16 +74,19 @@ const useStyles = makeStyles(theme => ({
 export default function CardWithPicture({ tutorial }) {
   const classes = useStyles();
   const [alignment, setAlignment] = React.useState("left");
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
   const dispatch = useDispatch();
   const firebase = useFirebase();
   const firestore = useFirestore();
+  const uid = firebase.auth().currentUser.uid;
   const handleIncrement = () => {
     setCount(count + 1);
+    addLikeTutorial({uid:uid,tut_id:tutorial.tutorial_id,value:count+1})(firebase,firestore,dispatch);
   };
 
   const handleDecrement = () => {
     setCount(count - 1);
+    addLikeTutorial({uid:uid,tut_id:tutorial.tutorial_id,value:count-1})(firebase,firestore,dispatch);
   };
 
   const handleAlignment = (event, newAlignment) => {
@@ -92,6 +95,7 @@ export default function CardWithPicture({ tutorial }) {
 
   useEffect(() => {
     getUserProfileData(tutorial?.created_by)(firebase, firestore, dispatch);
+    getTutorialLikesData()(firebase,firestore,dispatch).then((e)=>{e.map((ele)=>{if(ele.uid==uid && ele.tut_id==id){setCount(ele.value)}})})
   }, [tutorial]);
 
   const user = useSelector(

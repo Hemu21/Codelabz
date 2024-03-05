@@ -27,7 +27,9 @@ import { useFirebase, useFirestore } from "react-redux-firebase";
 import {
   getCommentData,
   getCommentReply,
-  addComment
+  addComment,
+  addLikeComment,
+  getCommentLikesData
 } from "../../../../store/actions/tutorialPageActions";
 const useStyles = makeStyles(() => ({
   container: {
@@ -56,12 +58,14 @@ const Comment = ({ id }) => {
   const classes = useStyles();
   const [showReplyfield, setShowReplyfield] = useState(false);
   const [alignment, setAlignment] = React.useState("left");
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
   const firestore = useFirestore();
   const firebase = useFirebase();
   const dispatch = useDispatch();
+  const user = firebase.auth().currentUser.uid;
   useState(() => {
     getCommentData(id)(firebase, firestore, dispatch);
+    getCommentLikesData()(firebase,firestore,dispatch).then((e)=>{e.map((ele)=>{if(ele.uid==user && ele.comment_id==id){setCount(ele.value)}})})
   }, [id]);
 
   const commentsArray = useSelector(
@@ -86,10 +90,12 @@ const Comment = ({ id }) => {
 
   const handleIncrement = () => {
     setCount(count + 1);
+    addLikeComment({uid:user,value:count+1,comment_id:id})(firebase,firestore,dispatch)
   };
 
   const handleDecrement = () => {
     setCount(count - 1);
+    addLikeComment({uid:user,value:count-1,comment_id:id})(firebase,firestore,dispatch)
   };
 
   const handleAlignment = (event, newAlignment) => {

@@ -30,6 +30,26 @@ const CommentReducer = (state = initialState, { type, payload }) => {
         error: payload
       };
 
+      case actions.GET_COMMENT_LIKES_START:
+        return {
+          ...state,
+          loading: true
+        };
+  
+      case actions.GET_COMMENT_LIKES_SUCCESS:
+        return {
+          ...state,
+          loading: false,
+          error: false,
+          data: [...state.data, payload]
+        };
+  
+      case actions.GET_COMMENT_LIKES_FAILED:
+        return {
+          ...state,
+          loading: false,
+          error: payload
+        };  
     case actions.GET_REPLIES_START:
       return {
         ...state,
@@ -61,7 +81,27 @@ const CommentReducer = (state = initialState, { type, payload }) => {
         loading: false,
         error: payload
       };
-
+    
+    case actions.ADD_COMMENT_LIKES_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: payload
+    };
+    
+    case actions.ADD_COMMENT_LIKES_START:
+      return {
+        ...state,
+        loading: true,
+    };
+    
+    case actions.ADD_COMMENT_LIKES_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+    };
+    
+    
     default:
       return state;
   }
