@@ -43,7 +43,7 @@ const CommentBox = ({ commentsArray, tutorialId }) => {
       createdAt: firestore.FieldValue.serverTimestamp(),
       userId: "codelabzuser"
     };
-    addComment(commentData)(firebase, firestore, dispatch);
+    addComment(commentData,tutorialId)(firebase, firestore, dispatch);
   };
 
   useEffect(() => {
